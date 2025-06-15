@@ -57,6 +57,10 @@ fun DisplayLocation(paddingValues: PaddingValues,
 
     val location = viewModel.location.value
 
+    val address = location?.let {
+        locationUtils.reverseGeocodeLocation(location)
+    }
+
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult ={ permissions->
@@ -103,7 +107,7 @@ fun DisplayLocation(paddingValues: PaddingValues,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if(location != null){
-            Text("Location: ${location.latitude} ${location.longitude}")
+            Text("Location: ${location.latitude} ${location.longitude}\nAddress: ${address}")
         }
         else{
             Text("Location not found")
