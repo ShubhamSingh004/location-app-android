@@ -7,8 +7,6 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.os.Looper
-import androidx.compose.runtime.MutableState
-
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -42,7 +40,11 @@ class LocationUtils(val context: Context) {
 
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
 
-        _fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+        _fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
     }
 
     fun hasLocationPermission(context: Context): Boolean {
@@ -58,14 +60,15 @@ class LocationUtils(val context: Context) {
     }
 
 
-    fun reverseGeocodeLocation(locationData: LocationData): String{
+    fun reverseGeocodeLocation(locationData: LocationData): String {
         val geocoder = Geocoder(context, Locale.getDefault())
         val coordinates = LatLng(locationData.latitude, locationData.longitude)
-        val addresses: MutableList<Address>? = geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1)
+        val addresses: MutableList<Address>? =
+            geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1)
 
-        return  if(addresses?.isNotEmpty() == true) {
+        return if (addresses?.isNotEmpty() == true) {
             addresses[0].getAddressLine(0)
-        } else{
+        } else {
             "Address Not Found"
         }
     }
