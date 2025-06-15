@@ -1,7 +1,6 @@
 package com.example.locationapp
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
@@ -24,15 +23,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import com.example.locationapp.ui.theme.LocationAppTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val viewModel: LocationViewModel = viewModel()
             LocationAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                            MyApp(modifier = Modifier, paddingValues = innerPadding)
+                            MyApp(modifier = Modifier,
+                                paddingValues = innerPadding,
+                                viewModel)
                 }
             }
         }
@@ -40,14 +43,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(modifier: Modifier, paddingValues: PaddingValues){
+fun MyApp(modifier: Modifier, paddingValues: PaddingValues, viewModel: LocationViewModel){
     val context = LocalContext.current
     val locationUtils = LocationUtils(context)
-    DisplayLocation(paddingValues, context, locationUtils)
+    DisplayLocation(paddingValues, context, locationUtils, viewModel)
 }
 
 @Composable
-fun DisplayLocation(paddingValues: PaddingValues, context: Context, locationUtils: LocationUtils) {
+fun DisplayLocation(paddingValues: PaddingValues,
+                    context: Context,
+                    locationUtils: LocationUtils,
+                    viewModel: LocationViewModel) {
+
+    val location = viewModel.location.value
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -56,6 +64,7 @@ fun DisplayLocation(paddingValues: PaddingValues, context: Context, locationUtil
                 &&
                 permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true){
                 // we have permission
+                locationUtils.requestLocationUpdates(viewModel = viewModel)
             }
             else{
                 // we do not have permission
@@ -93,11 +102,17 @@ fun DisplayLocation(paddingValues: PaddingValues, context: Context, locationUtil
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Location not found")
+        if(location != null){
+            Text("Location: ${location.latitude} ${location.longitude}")
+        }
+        else{
+            Text("Location not found")
+        }
 
         Button(onClick = {
             if(locationUtils.hasLocationPermission(context)){
                 // fetch location
+                locationUtils.requestLocationUpdates(viewModel)
             }
             else{
                 // request permission
